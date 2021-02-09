@@ -4,4 +4,4 @@ Source code is in the file "nondimPART.py"
 
 Executable file is "dist/nondimPART"
 
-More detailed description could be found here
+More detailed description could be found [here](description.md)
