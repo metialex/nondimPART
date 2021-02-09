@@ -17,8 +17,8 @@ $ git clone
 ```
 
 ## Theory
-To write formulas we can use latex format
-$ \phi = \frac{b}{c} + d $
+The only bad thing I found about Markdown (.md format) is that the additional steps are required to insert latex equations
 
-## Example of GUY
-show figures
+![](http://www.sciweavers.org/upload/Tex2Img_1612887662/render.png)
+
+but it is possible
