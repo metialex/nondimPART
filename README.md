@@ -22,3 +22,8 @@ The only bad thing I found about Markdown (.md format) is that the additional st
 ![](http://www.sciweavers.org/upload/Tex2Img_1612887662/render.png)
 
 it is only possible to insert them as figures, which you can generate, for example [here](http://www.sciweavers.org/free-online-latex-equation-editor)
+
+## Figures
+you can also put a figure in ypur repository and then use it here 
+
+![](Screenshot_1.png)
