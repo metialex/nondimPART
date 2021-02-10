@@ -10,6 +10,7 @@ def calc():
     Env.g = float(gravity_inp.get())
     Env.d_p_n = float(diameter_n_inp.get())
     Env.g_n = float(gravity_n_inp.get())
+    Env.omega = float(omega_inp.get())
 
     #define input array
     inputEnArray = [u_s_inp,Re_inp,viscosity_n_inp,Re_parties_inp, density_n_inp,u_s_n_inp]
@@ -39,6 +40,8 @@ class environment():
     Re = 0.0
     Re_parties = 0.0
 
+    omega = 0.0 #porosity
+
     def solve_stokes(self,inputEnArray,inputEnNondim):
         self.rho_s=self.rho_p/self.rho_f
         self.u_s = ((self.rho_p-self.rho_f)*self.d_p*self.d_p*self.g)/(18*self.mu)
@@ -65,11 +68,11 @@ class environment():
         #_______________________________Compute u_s_______________________________
         def calcFh(u):
             Cd= (24*self.mu)/(u*self.rho_f*self.d_p)
-            return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))
+            return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))*(1-self.omega)
         def calcFh1(u):
             Re = (u*self.rho_f*self.d_p)/self.mu
             Cd= 24/Re*(1+0.1935*pow(Re,0.6305))
-            return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))       
+            return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))*(1-self.omega)   
         #Cd-Re relation defined by Concha and Al-merdra (1979)
         def calcCd1(u,mu):
             Cd = 0.28*pow(1+(9.06/np.sqrt(u/mu)),2)
@@ -122,7 +125,7 @@ class environment():
             elif (formulaFlag == 2):
                 Cd = calcCd2(u_old,mu_old)
 
-            u_new = u_old*(1-dampCoeff) + dampCoeff*np.sqrt((self.rho_s-1)*self.g_n/abs(0.75*Cd))
+            u_new = u_old*(1-dampCoeff) + dampCoeff*np.sqrt((self.rho_s-1)*self.g_n/abs(0.75*Cd*(1-self.omega)))
             mu_new = mu_old*(1-dampCoeff) + dampCoeff*(self.d_p_n*self.mu*u_new)/(self.rho_f*self.u_s*self.d_p)
             
             #print(u_new, mu_new)
@@ -208,6 +211,13 @@ label_11.grid(row=11, sticky=W)
 u_s_inp = Entry(frame,width = "10")
 u_s_inp.grid(row=12, sticky=W)
 u_s_inp.configure(state="readonly")
+
+omega_label = Label(frame,text='Omega (porousity)', font=('Verdana',10))
+omega_label.grid(row=13, sticky=W)
+
+omega_inp = Entry(frame,width = "10")
+omega_inp.grid(row=14, sticky=W)
+omega_inp.insert(END, '0.0')
 
 ##______________________________Non-Dimensional quantities______________________________##
 
