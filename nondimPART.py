@@ -345,16 +345,11 @@ label_15.grid(row=2, column=5, sticky=W)
 re_range_flag = IntVar()
 re_range_flag.set(1)
 Radiobutton(frame, text="Re<1", variable=re_range_flag, value=1).grid(row=3, column=5, sticky=W)
-Radiobutton(frame, text="1<Re<1000", variable=re_range_flag, value=2).grid(row=5, column=5, sticky=W)
+Radiobutton(frame, text="1<Re<1000", variable=re_range_flag, value=2).grid(row=4, column=5, sticky=W)
 
-
-cd_iter_flag    = IntVar()
-cd_clift        = Checkbutton(frame,text="Clift et al.", variable = cd_iter_flag, onvalue = 1, offvalue = 0).grid(row = 6, column = 5)
-cd_mordant      = Checkbutton(frame,text="Mordant et al.", variable = cd_iter_flag, onvalue = 1, offvalue = 0).grid(row = 7, column = 5)
-
-#stokes_iter_flag = IntVar()
-#stokes_iter = Checkbutton(frame,text="itter.", variable = stokes_iter_flag, onvalue = 1, offvalue = 0)
-#stokes_iter.grid(row=3, column=6)
+stokes_iter_flag = IntVar()
+stokes_iter = Checkbutton(frame,text="itter.", variable = stokes_iter_flag, onvalue = 1, offvalue = 0)
+stokes_iter.grid(row=3, column=6)
 
 '''
 label_17 = Label(frame,text='dt_1, dt_2', font=('Verdana',10))
