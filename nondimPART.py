@@ -20,12 +20,12 @@ def calc():
     inputEnArray = [u_s_inp,Re_inp,viscosity_n_inp,Re_parties_inp, density_n_inp,u_s_n_inp]
     inputEnNondim = [Length_out, Time_out, Velocity_out, Pressure_out, Force_out, Torque_out]
     
-    if(re_range_flag.get()==1 and stokes_iter_flag.get() == 0):
+    if(re_range_flag.get()==1): #and stokes_iter_flag.get() == 0):
         Env.solve_stokes(inputEnArray,inputEnNondim)
-    elif (re_range_flag.get()==1 and stokes_iter_flag.get() == 1):
-        Env.solve_it(inputEnArray,inputEnNondim,1)
-    elif(re_range_flag.get()==2):
+    elif (re_range_flag.get()==2):# and stokes_iter_flag.get() == 1):
         Env.solve_it(inputEnArray,inputEnNondim,2)
+    elif(re_range_flag.get()==3):
+        Env.solve_it(inputEnArray,inputEnNondim,3)
 
 
 class environment():
@@ -70,25 +70,33 @@ class environment():
 
     def solve_it(self,inputEnArray, inputEnNondim, formulaFlag):
         #_______________________________Compute u_s_______________________________
-        def calcFh(u):
-            Cd= (24*self.mu)/(u*self.rho_f*self.d_p)
+        def calcFh1(u): #1
+            Cd = (24*self.mu)/(u*self.rho_f*self.d_p)
             return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))*(1-self.omega)
-        def calcFh1(u):
+        def calcFh2(u): #2
             Re = (u*self.rho_f*self.d_p)/self.mu
-            Cd= 24/Re*(1+0.1935*pow(Re,0.6305))
+            Cd = 24/Re*(1+0.1935*pow(Re,0.6305))
             return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))*(1-self.omega)   
+        def calcFh3(u):
+            Cd = 4*self.d_p*self.g*(self.rho_p/self.rho_f-1)/(3*pow(u,2))
+            return -0.5*self.rho_f*u*u*Cd*(3.1415*0.25*pow(self.d_p,2))*(1-self.omega) 
+
         #Cd-Re relation defined by Concha and Al-merdra (1979)
-        def calcCd1(u,mu):
+        def calcCd0(u,mu): #0
             Cd = 0.28*pow(1+(9.06/np.sqrt(u/mu)),2)
             return Cd
-        #Cd-Re relation Clift, Grace and Weber (2005)
-        def calcCd2(u,mu):
-            Cd = 24/(u/mu)*(1+0.1935*pow(u/mu,0.6305))
-            return Cd
         #Cd-Re relation for Stokes flow
-        def calcCd3(u,mu):
+        def calcCd1(u,mu): #1
             Cd = 24*mu/u
             return Cd
+        #Cd-Re relation Clift, Grace and Weber (2005)
+        def calcCd2(u,mu): #2
+            Cd = 24/(u/mu)*(1+0.1935*pow(u/mu,0.6305))
+            return Cd
+        def calcCd3(u,mu):
+            Cd = 4*self.d_p*self.g*(self.rho_p/self.rho_f-1)/(3*pow(u,2))
+            return Cd
+
 
         self.rho_s=self.rho_p/self.rho_f
 
@@ -102,9 +110,11 @@ class environment():
         while (abs(u_new-u_old) >1e-10):
             u_old = u_new
             if(formulaFlag == 1):
-                Fh = calcFh(u_old)
-            elif (formulaFlag == 2):
                 Fh = calcFh1(u_old)
+            elif (formulaFlag == 2):
+                Fh = calcFh2(u_old)
+            elif (formulaFlag == 3):
+                Fh = calcFh3(u_old)
             u_new = (dt_1/m)*(F_g+Fh)+u_old
             #print(u_new)
         self.u_s = u_new
@@ -125,9 +135,11 @@ class environment():
             mu_old = mu_new
 
             if (formulaFlag == 1):
-                Cd = calcCd3(u_old,mu_old)
+                Cd = calcCd1(u_old,mu_old)
             elif (formulaFlag == 2):
                 Cd = calcCd2(u_old,mu_old)
+            elif (formulaFlag == 3):
+                Cd = calcCd3(u_old,mu_old)
 
             u_new = u_old*(1-dampCoeff) + dampCoeff*np.sqrt((self.rho_s-1)*self.g_n/abs(0.75*Cd*(1-self.omega)))
             mu_new = mu_old*(1-dampCoeff) + dampCoeff*(self.d_p_n*self.mu*u_new)/(self.rho_f*self.u_s*self.d_p)
@@ -166,7 +178,7 @@ root.geometry('950x600')
 root.resizable(width=False, height=False)
 
 frame = Frame(root)
-frame.place(relx=0.05,rely=0.05,relwidth=0.9,relheight=0.9)
+frame.place(relx=0.05,rely=0.05,relwidth=1.5,relheight=0.9)
 
 Env = environment()
 
@@ -339,18 +351,28 @@ calculate.configure(command=calc)
 #re_range_option = OptionMenu(frame,re_range,"Re<1", "1<Re<1000")
 #re_range_option.grid(row=2,column=4,sticky=W)
 
-label_15 = Label(frame,text='Re number range', font=('Verdana',10))
+label_15 = Label(frame,text='Re < 1:', font=('Verdana 10 underline'))
 label_15.grid(row=2, column=5, sticky=W)
 
 re_range_flag = IntVar()
 re_range_flag.set(1)
-Radiobutton(frame, text="Re<1", variable=re_range_flag, value=1).grid(row=3, column=5, sticky=W)
-Radiobutton(frame, text="1<Re<1000", variable=re_range_flag, value=2).grid(row=5, column=5, sticky=W)
+Radiobutton(frame, text="Stokes law: \nCd = 24/Re", variable=re_range_flag, value=1, justify=LEFT).grid(row=3, column=5, sticky=W)
+
+label_18 = Label(frame,text='1 < Re < 1000:', font=('Verdana 10 underline'))
+label_18.grid(row=5, column=5, sticky=W)
+
+Radiobutton(frame, text="Clift et al. :\nCd = 24/Re*(1+0.1935*Re^0.6305)", variable=re_range_flag, value=2, justify=LEFT).grid(row=6, column=5, sticky=W)
+Radiobutton(frame, text="Mordant et al. :\nCd = 8*r*g*(\u03C1_p/\u03C1_f-1)/(3*v_s\u00B2)", variable=re_range_flag, value=3, justify=LEFT).grid(row=7, column=5, sticky=W)
 
 
-cd_iter_flag    = IntVar()
-cd_clift        = Checkbutton(frame,text="Clift et al.", variable = cd_iter_flag, onvalue = 1, offvalue = 0).grid(row = 6, column = 5)
-cd_mordant      = Checkbutton(frame,text="Mordant et al.", variable = cd_iter_flag, onvalue = 1, offvalue = 0).grid(row = 7, column = 5)
+#Cd_iter_flag    = IntVar()
+#Cd_clift        = Checkbutton(frame,text="Clift et al. (Cd = 24/Re*\n[1+0.1935*Re^0.6305])", variable = Cd_iter_flag, onvalue = 1, offvalue = 0, height = 2, justify = "left")
+#Cd_clift.grid(row = 6, column = 5)
+#Cd_mordant      = Checkbutton(frame,text="Mordant et al. (Cd = 8*r*g*\n(rho_p/rho_f-1)/(3*v_s^2))", variable = Cd_iter_flag, onvalue = 1, offvalue = 0, height = 2)
+#Cd_mordant.grid(row = 7, column = 5)
+
+
+
 
 #stokes_iter_flag = IntVar()
 #stokes_iter = Checkbutton(frame,text="itter.", variable = stokes_iter_flag, onvalue = 1, offvalue = 0)
